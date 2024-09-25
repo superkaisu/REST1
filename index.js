@@ -1,16 +1,25 @@
 //express module in use
-
-let dictionary = [];
+//fs module in use
+//cors module in use - because my fronend doesn't work intendedly without it
 const { error } = require("console");
 const express = require("express");
 const fs = require("fs");
+const cors = require("cors");
+const app = express();
 
-var app = express();
+var corsOptions = {
+  origin: "http://localhost:5173",
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true }));
 
-/*CORS isn't enabled on the server, this is due to security reasons by default,
-so no one else but the webserver itself can make requests to the server.*/
+app.options("*", cors(corsOptions));
+
+let dictionary = [];
 
 // Add headers
 app.use(function (req, res, next) {
@@ -78,14 +87,14 @@ app.get("/words/:inputWord", (req, res) => {
   //res.json(word.eng ? { word } : { message: "Not found" });
 });
 
-//POST a word - Tämä jäi kesken, ajattelen vähän vaikeasti.
-app.post("/words", (req, res) => {
+app.post("/words", cors(corsOptions), (req, res, next) => {
   var word = req.body;
-  dictionary.push(word);
 
   //JSON objektin käsittely, muunnetaan sieväksi tekstimuodoksi ja tallennus tiedostoon
-  var newWord = JSON.stringify(word);
-  var fixedWord = newWord.slice(9, -1);
+  if (typeof word == "object") {
+    var newWord = JSON.stringify(word);
+    var fixedWord = newWord.slice(9, -1);
+  }
 
   fs.appendFile("./sanakirja.txt", "\r" + fixedWord, (err) => {
     if (err) {
