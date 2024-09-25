@@ -2,3 +2,4 @@ talo house
 auto car
 perhonen butterfly
 koira dog
+rotta rat

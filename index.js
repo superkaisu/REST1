@@ -11,7 +11,6 @@ var corsOptions = {
   origin: "http://localhost:5173",
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
-
 app.use(cors(corsOptions));
 
 app.use(express.json()); // for parsing application/json
@@ -35,7 +34,7 @@ app.use(function (req, res, next) {
   // Request headers you wish to allow
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token"
+    "Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, Authorization"
   );
 
   // Set to true if you need the website to include cookies in the requests sent
@@ -67,7 +66,7 @@ app.get("/words", (req, res) => {
       eng: words[1],
     };
     dictionary.push(word);
-    console.log(dictionary);
+    //console.log(dictionary);
   });
 
   res.json(dictionary);
@@ -90,17 +89,25 @@ app.get("/words/:inputWord", (req, res) => {
 app.post("/words", cors(corsOptions), (req, res, next) => {
   var word = req.body;
 
-  //JSON objektin käsittely, muunnetaan sieväksi tekstimuodoksi ja tallennus tiedostoon
-  if (typeof word == "object") {
-    var newWord = JSON.stringify(word);
-    var fixedWord = newWord.slice(9, -1);
-  }
+  var fixedWord = JSON.stringify(word);
 
-  fs.appendFile("./sanakirja.txt", "\r" + fixedWord, (err) => {
+  //modify the word to be saved
+  fixedWord = fixedWord.replace(/"/g, "");
+  fixedWord = fixedWord.replace(/fin/g, "");
+  fixedWord = fixedWord.replace(/eng/g, " ");
+  fixedWord = fixedWord.replace(/:/g, "");
+  fixedWord = fixedWord.replace(/{/g, "");
+  fixedWord = fixedWord.replace(/,/g, "");
+  fixedWord = fixedWord.replace(/}/g, "");
+
+  console.log(fixedWord);
+
+  fs.appendFile("./sanakirja.txt", "\n" + fixedWord, (err) => {
     if (err) {
       res.status(500).json({ message: "Error" });
     } else {
       res.json(word);
+      console.log("Data saved");
     }
   });
 });
